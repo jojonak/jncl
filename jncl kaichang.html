@@ -1,0 +1,449 @@
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>角色群芳录</title>
+    <style>
+      :root {
+        --bg: #121214;
+        --card: rgba(22, 22, 26, 0.82);
+        --block: rgba(30, 30, 36, 0.85);
+        --border: rgba(255, 255, 255, 0.12);
+        --border-s: rgba(255, 255, 255, 0.25);
+        --text: #f0f0f5;
+        --sub: #b0b0bc;
+        --dim: #808090;
+        --red: #d14949;
+        --accent: #e5a952;
+        --shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      }
+
+      *, *::before, *::after {
+        margin: 0; padding: 0; box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+        background: transparent;
+        color: var(--text);
+        font-size: 14px;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* ── 全屏背景底图容器 ── */
+      .page-wrap {
+        background-image: url('https://imgur.la/images/2026/09/18/Gemini_Generated_Image_wcvd3fwcvd3fwcvd.md.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        border: 1px solid var(--border-s);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        margin: 10px auto;
+        max-width: 1100px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      /* 半透明暗色遮罩，确保文字和卡片清晰可读 */
+      .page-wrap::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(12, 12, 16, 0.68);
+        backdrop-filter: blur(4px);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .content {
+        position: relative;
+        z-index: 1;
+        padding: 28px 20px 24px;
+      }
+
+      /* ── 标题区 ── */
+      .hero {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px 0 24px;
+        gap: 8px;
+      }
+
+      .hero-title {
+        font-family: ui-serif, 'Songti SC', 'STSong', 'SimSun', serif;
+        font-size: 30px;
+        font-weight: 900;
+        color: var(--text);
+        letter-spacing: 0.2em;
+        text-shadow: 0 3px 12px rgba(0, 0, 0, 0.8);
+      }
+
+      .hero-sub {
+        font-size: 12px;
+        color: var(--sub);
+        letter-spacing: 0.15em;
+      }
+
+      /* ── 四宫格卡片布局 ── */
+      .characters-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        padding: 10px;
+      }
+
+      .char-card {
+        background: var(--card);
+        border: 1px solid var(--border-s);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .char-header {
+        padding: 10px 14px;
+        background: var(--block);
+        border-bottom: 1px solid var(--border);
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--accent);
+        font-family: ui-serif, 'Songti SC', 'STSong', 'SimSun', serif;
+        letter-spacing: 0.1em;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .char-header span {
+        font-size: 11px;
+        color: var(--dim);
+        font-weight: 400;
+      }
+
+      /* ── 立绘展示区 (512x768 比例) ── */
+      .portrait-wrap {
+        position: relative;
+        width: 100%;
+        background: #000;
+      }
+
+      .portrait-btn {
+        display: block;
+        width: 100%;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        padding: 0;
+        text-align: inherit;
+      }
+
+      .portrait-viewport {
+        position: relative;
+        overflow: hidden;
+        aspect-ratio: 512 / 768; /* 严格按照512x768比例 */
+        background: #1a1a20;
+      }
+
+      .portrait-img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease, filter 0.3s ease, opacity 0.2s ease;
+      }
+
+      .portrait-btn:hover .portrait-img {
+        transform: scale(1.02);
+        filter: brightness(1.05);
+      }
+
+      .portrait-btn.is-flipping .portrait-img {
+        opacity: 0.2;
+        transform: scale(0.98);
+      }
+
+      .portrait-tag {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        padding: 4px 10px;
+        border-radius: 4px;
+        background: rgba(0, 0, 0, 0.75);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        pointer-events: none;
+      }
+
+      /* ── 底部操作区与按钮 ── */
+      .char-footer {
+        padding: 12px 14px;
+        background: var(--block);
+        border-top: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex-grow: 1;
+        justify-content: flex-end;
+      }
+
+      .char-desc {
+        font-size: 12px;
+        color: var(--sub);
+        line-height: 1.5;
+        min-height: 36px;
+      }
+
+      .action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 10px;
+        background: var(--red);
+        border: none;
+        border-radius: 5px;
+        color: #fff;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(209, 73, 73, 0.3);
+      }
+
+      .action-btn:hover {
+        background: #e25858;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(209, 73, 73, 0.45);
+      }
+
+      .action-btn:active {
+        transform: translateY(0);
+      }
+
+      /* 响应式适配：手机端自动变为单列 */
+      @media (max-width: 650px) {
+        .characters-grid {
+          grid-template-columns: 1fr;
+        }
+        .page-wrap {
+          margin: 0;
+          border-radius: 0;
+          border: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-wrap">
+      <div class="content">
+
+        <!-- 顶部标题 -->
+        <div class="hero">
+          <div class="hero-title">角色群芳鉴</div>
+          <div class="hero-sub">点击卡片立绘切换差分 · 点击下方按钮开启专属剧情</div>
+        </div>
+
+        <!-- 四宫格角色面板 -->
+        <div class="characters-grid">
+
+          <!-- 角色 1 -->
+          <div class="char-card">
+            <div class="char-header">角色一 <span>点击图片切换差分</span></div>
+            <div class="portrait-wrap">
+              <button
+                type="button"
+                class="portrait-btn"
+                data-state="default"
+                data-default-src="https://imgur.la/images/2026/09/17/ComfyUI_02526_.png"
+                data-diff-src="https://imgur.la/images/2026/09/17/ComfyUI_02448_.md.png"
+                onclick="flipPortrait(this)"
+              >
+                <div class="portrait-viewport">
+                  <img
+                    class="portrait-img"
+                    src="https://imgur.la/images/2026/09/17/ComfyUI_02526_.png"
+                    alt="角色1立绘"
+                    width="512"
+                    height="768"
+                    loading="lazy"
+                    referrerpolicy="no-referrer"
+                  />
+                  <div class="portrait-tag">切换差分</div>
+                </div>
+              </button>
+            </div>
+            <div class="char-footer">
+              <div class="char-desc">点击上方立绘可在两张不同差分之间切换预览。</div>
+              <button class="action-btn" onclick="switchToOpening(0, event)">“角色1”开场</button>
+            </div>
+          </div>
+
+          <!-- 角色 2 -->
+          <div class="char-card">
+            <div class="char-header">角色二 <span>点击图片切换差分</span></div>
+            <div class="portrait-wrap">
+              <button
+                type="button"
+                class="portrait-btn"
+                data-state="default"
+                data-default-src="https://imgur.la/images/2026/09/17/ComfyUI_02452_.png"
+                data-diff-src="https://imgur.la/images/2026/09/17/ComfyUI_02452_.png"
+                onclick="flipPortrait(this)"
+              >
+                <div class="portrait-viewport">
+                  <img
+                    class="portrait-img"
+                    src="https://imgur.la/images/2026/09/17/ComfyUI_02452_.png"
+                    alt="角色2立绘"
+                    width="512"
+                    height="768"
+                    loading="lazy"
+                    referrerpolicy="no-referrer"
+                  />
+                  <div class="portrait-tag">切换差分</div>
+                </div>
+              </button>
+            </div>
+            <div class="char-footer">
+              <div class="char-desc">点击上方立绘可在两张不同差分之间切换预览。</div>
+              <button class="action-btn" onclick="switchToOpening(1, event)">“角色2”开场</button>
+            </div>
+          </div>
+
+          <!-- 角色 3 -->
+          <div class="char-card">
+            <div class="char-header">角色三 <span>点击图片切换差分</span></div>
+            <div class="portrait-wrap">
+              <button
+                type="button"
+                class="portrait-btn"
+                data-state="default"
+                data-default-src="https://imgur.la/images/2026/09/17/ComfyUI_02460_.md.png"
+                data-diff-src="https://imgur.la/images/2026/09/17/ComfyUI_02460_.md.png"
+                onclick="flipPortrait(this)"
+              >
+                <div class="portrait-viewport">
+                  <img
+                    class="portrait-img"
+                    src="https://imgur.la/images/2026/09/17/ComfyUI_02460_.md.png"
+                    alt="角色3立绘"
+                    width="512"
+                    height="768"
+                    loading="lazy"
+                    referrerpolicy="no-referrer"
+                  />
+                  <div class="portrait-tag">切换差分</div>
+                </div>
+              </button>
+            </div>
+            <div class="char-footer">
+              <div class="char-desc">点击上方立绘可在两张不同差分之间切换预览。</div>
+              <button class="action-btn" onclick="switchToOpening(2, event)">“角色3”开场</button>
+            </div>
+          </div>
+
+          <!-- 角色 4 -->
+          <div class="char-card">
+            <div class="char-header">角色四 <span>点击图片切换差分</span></div>
+            <div class="portrait-wrap">
+              <button
+                type="button"
+                class="portrait-btn"
+                data-state="default"
+                data-default-src="https://imgur.la/images/2026/09/17/ComfyUI_02466_.png"
+                data-diff-src="https://imgur.la/images/2026/09/17/ComfyUI_02490_.png"
+                onclick="flipPortrait(this)"
+              >
+                <div class="portrait-viewport">
+                  <img
+                    class="portrait-img"
+                    src="https://imgur.la/images/2026/09/17/ComfyUI_02466_.png"
+                    alt="角色4立绘"
+                    width="512"
+                    height="768"
+                    loading="lazy"
+                    referrerpolicy="no-referrer"
+                  />
+                  <div class="portrait-tag">切换差分</div>
+                </div>
+              </button>
+            </div>
+            <div class="char-footer">
+              <div class="char-desc">点击上方立绘可在两张不同差分之间切换预览。</div>
+              <button class="action-btn" onclick="switchToOpening(3, event)">“角色4”开场</button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <script>
+      /* 立绘点击翻页/切换差分逻辑 */
+      function flipPortrait(btn) {
+        if (btn.dataset.busy === 'true') return;
+        const img = btn.querySelector('.portrait-img');
+        const isDefault = btn.dataset.state !== 'diff';
+        const nextState = isDefault ? 'diff' : 'default';
+        const nextSrc = nextState === 'default' ? btn.dataset.defaultSrc : btn.dataset.diffSrc;
+
+        if (!img || !nextSrc) return;
+
+        btn.dataset.busy = 'true';
+        btn.classList.add('is-flipping');
+
+        const preload = new Image();
+        preload.referrerPolicy = 'no-referrer';
+        preload.onload = () => {
+          btn.dataset.state = nextState;
+          img.src = nextSrc;
+          window.setTimeout(() => {
+            btn.classList.remove('is-flipping');
+            btn.dataset.busy = 'false';
+          }, 200);
+        };
+        preload.onerror = () => {
+          btn.classList.remove('is-flipping');
+          btn.dataset.busy = 'false';
+        };
+        preload.src = nextSrc;
+      }
+
+      /* 酒馆开场白切换逻辑 (对应Swipe ID 0~3) */
+      async function switchToOpening(swipeId, clickEvent) {
+        const card = clickEvent?.currentTarget;
+        if (card) {
+          card.style.opacity = '0.5';
+          card.style.pointerEvents = 'none';
+        }
+        try {
+          const messages = await getChatMessages('0', { include_swipe: true });
+          if (messages && messages[0].swipes && messages[0].swipes[swipeId]) {
+            await setChatMessage(messages[0].swipes[swipeId], 0, {
+              swipe_id: swipeId,
+              refresh: 'display_and_render_current',
+            });
+          } else {
+            throw new Error(`开场白 ${swipeId + 1} 未找到，请确保已在酒馆中按顺序添加了对应的4个开场白滑动条（Swipes）。`);
+          }
+        } catch (err) {
+          console.error('切换开场白失败:', err);
+          alert(`切换失败: ${err.message}`);
+          if (card) {
+            card.style.opacity = '1';
+            card.style.pointerEvents = 'auto';
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
